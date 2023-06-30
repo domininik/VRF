@@ -39,7 +39,7 @@ contract VRFConsumer is VRFConsumerBaseV2 {
   uint8 private constant TAILS = 2;
 
   // Owner of this contract.
-  address public s_owner;
+  address public immutable s_owner;
 
   // Request to user mapping.
   mapping(uint256 => address) public s_users;
