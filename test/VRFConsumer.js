@@ -68,6 +68,56 @@ describe("VRFConsumer", function () {
       await expect(consumer.connect(otherAccount).deposit({ value: ethers.parseEther("0.1") }))
         .to.be.revertedWith("Deposit is too high")
     })
+
+    it("Should increase user's balance if value is correct", async function () {
+      const { consumer, owner, otherAccount } = await loadFixture(deployFixture)
+
+      await consumer.connect(otherAccount).deposit({ value: ethers.parseEther("0.01") })
+      
+      expect(await consumer.connect(owner).getBalance(otherAccount)).to.equal(ethers.parseEther("0.01"))
+    })
+
+    it("Should fallback when no params are sent (using receive function)", async function () {
+      const { consumer, owner, otherAccount } = await loadFixture(deployFixture)
+
+      await otherAccount.sendTransaction({
+        to: consumer,
+        value: ethers.parseEther("0.01")
+      })
+      
+      expect(await consumer.connect(owner).getBalance(otherAccount)).to.equal(ethers.parseEther("0.01"))
+    })
+
+    it("Should fallback when some params are sent (using fallback function)", async function () {
+      const { consumer, owner, otherAccount } = await loadFixture(deployFixture)
+
+      await otherAccount.sendTransaction({
+        to: consumer,
+        value: ethers.parseEther("0.01"),
+        data: "0x1234"
+      })
+      
+      expect(await consumer.connect(owner).getBalance(otherAccount)).to.equal(ethers.parseEther("0.01"))
+    })
+  })
+
+  describe("Getting balance", function () {
+    it("Should return the correct balance if owner calls it", async function () {
+      const { consumer, owner, otherAccount } = await loadFixture(deployFixture)
+
+      await consumer.connect(otherAccount).deposit({ value: ethers.parseEther("0.01") })
+
+      expect(await consumer.connect(owner).getBalance(otherAccount)).to.equal(ethers.parseEther("0.01"))
+    })
+
+    it("Should fail if other account calls it", async function () {
+      const { consumer, otherAccount } = await loadFixture(deployFixture)
+
+      await consumer.connect(otherAccount).deposit({ value: ethers.parseEther("0.01") })
+
+      await expect(consumer.connect(otherAccount).getBalance(otherAccount))
+        .to.be.revertedWith("You are not allowed to call this function!")
+    })
   })
 
   describe("Flipping", function () {

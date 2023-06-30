@@ -78,7 +78,7 @@ contract VRFConsumer is VRFConsumerBaseV2 {
   }
 
   modifier onlyOwner() {
-    require(msg.sender == s_owner);
+    require(msg.sender == s_owner, "You are not allowed to call this function!");
     _;
   }
 
@@ -163,4 +163,16 @@ contract VRFConsumer is VRFConsumerBaseV2 {
   //   address payable ownerPayable = payable(s_owner);
   //   ownerPayable.transfer(address(this).balance); 
   // }
+
+  function getBalance(address user) public view onlyOwner returns (uint256) {
+    return s_deposits[user];
+  }
+
+  receive() external payable {
+    deposit();
+  }
+
+  fallback() external payable {
+    deposit();
+  }
 }
