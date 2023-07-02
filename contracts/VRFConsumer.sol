@@ -5,15 +5,15 @@ import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 
 contract VRFConsumer is VRFConsumerBaseV2 {
-  VRFCoordinatorV2Interface immutable COORDINATOR;
+  VRFCoordinatorV2Interface private immutable COORDINATOR;
 
   // Subscription ID this contract uses for funding requests.
-  uint64 immutable i_subscriptionId;
+  uint64 private immutable i_subscriptionId;
 
   // The gas lane to use, which specifies the maximum gas price to bump to.
   // For a list of available gas lanes on each network,
   // see https://docs.chain.link/docs/vrf-contracts/#configurations
-  bytes32 immutable i_keyHash;
+  bytes32 private immutable i_keyHash;
 
   // Depends on the number of requested values that you want sent to the
   // fulfillRandomWords() function. Storing each word costs about 20,000 gas,
@@ -39,7 +39,7 @@ contract VRFConsumer is VRFConsumerBaseV2 {
   uint8 private constant TAILS = 2;
 
   // Owner of this contract.
-  address public immutable i_owner;
+  address private immutable i_owner;
 
   // Request to user mapping.
   mapping(uint256 => address) public s_users;
