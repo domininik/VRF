@@ -5,7 +5,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 
 contract VRFConsumer is VRFConsumerBaseV2 {
-  VRFCoordinatorV2Interface private immutable COORDINATOR;
+  VRFCoordinatorV2Interface private immutable i_coordinator;
 
   // Subscription ID this contract uses for funding requests.
   uint64 private immutable i_subscriptionId;
@@ -76,7 +76,7 @@ contract VRFConsumer is VRFConsumerBaseV2 {
     address vrfCoordinator,
     bytes32 keyHash
   ) VRFConsumerBaseV2(vrfCoordinator) {
-    COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
+    i_coordinator = VRFCoordinatorV2Interface(vrfCoordinator);
     i_keyHash = keyHash;
     i_owner = msg.sender;
     i_subscriptionId = subscriptionId;
@@ -109,7 +109,7 @@ contract VRFConsumer is VRFConsumerBaseV2 {
     require(s_requests[user] == 0, "Flip is in progress, coin didn't land yet!");
 
     // Will revert if subscription is not set and funded.
-    requestId = COORDINATOR.requestRandomWords(
+    requestId = i_coordinator.requestRandomWords(
       i_keyHash,
       i_subscriptionId,
       REQUEST_CONFIRMATIONS,
