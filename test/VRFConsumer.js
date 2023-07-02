@@ -45,13 +45,22 @@ describe("VRFConsumer", function () {
   })
 
   describe("Betting", function () {
-    it("Should store the bet", async function () {
+    it("Should store the bet and make it available for contract owner", async function () {
       const { consumer, owner, otherAccount } = await loadFixture(deployFixture)
 
       await consumer.connect(otherAccount).pick(2)
 
       expect(await consumer.getPick(otherAccount)).to.equal(2)
       expect(await consumer.getPick(owner)).to.equal(0)
+    })
+
+    it("Should store the bet and make it unavailable for other accounts", async function () {
+      const { consumer, owner, otherAccount } = await loadFixture(deployFixture)
+
+      await consumer.connect(otherAccount).pick(2)
+
+      await expect(consumer.connect(otherAccount).getPick(otherAccount))
+        .to.be.revertedWith("You are not allowed to call this function!")
     })
 
     it("Should fail if the bet is not between tails and heads", async function () {
@@ -139,13 +148,13 @@ describe("VRFConsumer", function () {
       const { consumer, otherAccount } = await loadFixture(deployFixture)
 
       await consumer.connect(otherAccount).deposit({ value: ethers.parseEther("0.01") })
-      await consumer.connect(otherAccount).pick(2)
+      await consumer.connect(otherAccount).pick(1)
 
       await expect(consumer.connect(otherAccount).flipCoin())
         .to.emit(consumer, "CoinFlipped").withArgs(anyValue, otherAccount.address)
     })
 
-    it("Should store the request ID value", async function () {
+    it("Should store the request ID value and make it available for contract owner", async function () {
       const { consumer, owner, otherAccount } = await loadFixture(deployFixture)
 
       await consumer.connect(otherAccount).deposit({ value: ethers.parseEther("0.01") })
@@ -154,6 +163,17 @@ describe("VRFConsumer", function () {
 
       expect(await consumer.getRequest(otherAccount)).not.to.equal(0);
       expect(await consumer.getRequest(owner)).to.equal(0);
+    })
+
+    it("Should store the request ID value and make it unavailable for other accounts", async function () {
+      const { consumer, owner, otherAccount } = await loadFixture(deployFixture)
+
+      await consumer.connect(otherAccount).deposit({ value: ethers.parseEther("0.01") })
+      await consumer.connect(otherAccount).pick(2)
+      await consumer.connect(otherAccount).flipCoin()
+
+      await expect(consumer.connect(otherAccount).getRequest(otherAccount))
+        .to.be.revertedWith("You are not allowed to call this function!")
     })
 
     it("Should prevent from flipping again when coin didn't land yet", async function () {
@@ -180,7 +200,7 @@ describe("VRFConsumer", function () {
         .to.emit(consumer, "CoinLanded").withArgs(requestId, anyValue)
     })
 
-    it("Should store the result", async function () {
+    it("Should store the result and make it available for the contract owner", async function () {
       const { consumer, coordinator, owner, otherAccount } = await loadFixture(deployFixture)
 
       await consumer.connect(otherAccount).deposit({ value: ethers.parseEther("0.01") })
@@ -191,6 +211,19 @@ describe("VRFConsumer", function () {
 
       expect(await consumer.getResult(otherAccount)).not.to.equal(0);
       expect(await consumer.getResult(owner)).to.equal(0);
+    })
+
+    it("Should store the result and make it unavailable for other accounts", async function () {
+      const { consumer, coordinator, owner, otherAccount } = await loadFixture(deployFixture)
+
+      await consumer.connect(otherAccount).deposit({ value: ethers.parseEther("0.01") })
+      await consumer.connect(otherAccount).pick(2)
+      await consumer.connect(otherAccount).flipCoin()
+      const requestId = await consumer.getRequest(otherAccount)
+      await coordinator.fulfillRandomWords(requestId, consumer.target)
+
+      await expect(consumer.connect(otherAccount).getResult(otherAccount))
+        .to.be.revertedWith("You are not allowed to call this function!")
     })
 
     it("Should clear the request ID value, so player can flip again", async function () {
@@ -218,6 +251,19 @@ describe("VRFConsumer", function () {
       await expect(consumer.connect(otherAccount).withdrawToWinner()).to.be.revertedWith("You have to play first!")
     })
 
+    it("Should fail if user didn't win", async function () {
+      const { consumer, coordinator, otherAccount } = await loadFixture(deployFixture)
+
+      await consumer.connect(otherAccount).deposit({ value: ethers.parseEther("0.01") })
+      await consumer.connect(otherAccount).pick(2)
+      await consumer.connect(otherAccount).flipCoin()
+      const requestId = await consumer.getRequest(otherAccount)
+      await coordinator.fulfillRandomWordsWithOverride(requestId, consumer.target, [4])
+
+      await expect(consumer.connect(otherAccount).withdrawToWinner())
+        .to.be.revertedWith("You didn't win this bet, so you cannot withdraw.")
+    })
+
     it("Should fail if contract balance is too low", async function () {
       const { consumer, coordinator, otherAccount } = await loadFixture(deployFixture)
 
@@ -225,10 +271,24 @@ describe("VRFConsumer", function () {
       await consumer.connect(otherAccount).pick(2)
       await consumer.connect(otherAccount).flipCoin()
       const requestId = await consumer.getRequest(otherAccount)
-      await coordinator.fulfillRandomWords(requestId, consumer.target)
+      await coordinator.fulfillRandomWordsWithOverride(requestId, consumer.target, [5])
 
       await expect(consumer.connect(otherAccount).withdrawToWinner())
         .to.be.revertedWith("Not enough balance to withdraw. Please contact the owner.")
+    })
+
+    it("Should send the prize to the winner", async function () {
+      const { consumer, coordinator, owner, otherAccount } = await loadFixture(deployFixture)
+
+      await consumer.connect(owner).deposit({ value: ethers.parseEther("0.01") })
+      await consumer.connect(otherAccount).deposit({ value: ethers.parseEther("0.01") })
+      await consumer.connect(otherAccount).pick(2)
+      await consumer.connect(otherAccount).flipCoin()
+      const requestId = await consumer.getRequest(otherAccount)
+      await coordinator.fulfillRandomWordsWithOverride(requestId, consumer.target, [5])
+
+      await expect(() => consumer.connect(otherAccount).withdrawToWinner())
+        .to.changeEtherBalance(otherAccount, ethers.parseEther("0.019"))
     })
   })
 })

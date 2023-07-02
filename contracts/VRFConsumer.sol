@@ -149,11 +149,6 @@ contract VRFConsumer is VRFConsumerBaseV2 {
     userPayable.transfer(amount);
   }
 
-  // function withdrawAll() public onlyOwner {
-  //   address payable ownerPayable = payable(i_owner);
-  //   ownerPayable.transfer(address(this).balance); 
-  // }
-
   function getOwner() public view returns (address) {
     return i_owner;
   }
