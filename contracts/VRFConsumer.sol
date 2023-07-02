@@ -42,16 +42,16 @@ contract VRFConsumer is VRFConsumerBaseV2 {
   address private immutable i_owner;
 
   // Request to user mapping.
-  mapping(uint256 => address) public s_users;
+  mapping(uint256 => address) private s_users;
 
   // User to request mapping.
-  mapping(address => uint256) public s_requests;
+  mapping(address => uint256) private s_requests;
 
   // User to bet mapping.
-  mapping(address => uint8) public s_picks;
+  mapping(address => uint8) private s_picks;
 
   // User to actual result mapping.
-  mapping(address => uint256) public s_results;
+  mapping(address => uint256) private s_results;
 
   // User to deposits mapping.
   mapping(address => uint256) private s_deposits;
@@ -160,6 +160,18 @@ contract VRFConsumer is VRFConsumerBaseV2 {
 
   function getBalance(address user) public view onlyOwner returns (uint256) {
     return s_deposits[user];
+  }
+
+  function getRequest(address user) public view onlyOwner returns (uint256) {
+    return s_requests[user];
+  }
+
+  function getResult(address user) public view onlyOwner returns (uint256) {
+    return s_results[user];
+  }
+  
+  function getPick(address user) public view onlyOwner returns (uint8) {
+    return s_picks[user];
   }
 
   /**

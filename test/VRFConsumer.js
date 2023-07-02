@@ -50,8 +50,8 @@ describe("VRFConsumer", function () {
 
       await consumer.connect(otherAccount).pick(2)
 
-      expect(await consumer.s_picks(otherAccount)).to.equal(2)
-      expect(await consumer.s_picks(owner)).to.equal(0)
+      expect(await consumer.getPick(otherAccount)).to.equal(2)
+      expect(await consumer.getPick(owner)).to.equal(0)
     })
 
     it("Should fail if the bet is not between tails and heads", async function () {
@@ -152,8 +152,8 @@ describe("VRFConsumer", function () {
       await consumer.connect(otherAccount).pick(2)
       await consumer.connect(otherAccount).flipCoin()
 
-      expect(await consumer.s_requests(otherAccount)).not.to.equal(0);
-      expect(await consumer.s_requests(owner)).to.equal(0);
+      expect(await consumer.getRequest(otherAccount)).not.to.equal(0);
+      expect(await consumer.getRequest(owner)).to.equal(0);
     })
 
     it("Should prevent from flipping again when coin didn't land yet", async function () {
@@ -174,7 +174,7 @@ describe("VRFConsumer", function () {
       await consumer.connect(otherAccount).deposit({ value: ethers.parseEther("0.01") })
       await consumer.connect(otherAccount).pick(2)
       await consumer.connect(otherAccount).flipCoin()
-      const requestId = await consumer.s_requests(otherAccount)
+      const requestId = await consumer.getRequest(otherAccount)
 
       await expect(coordinator.fulfillRandomWords(requestId, consumer.target))
         .to.emit(consumer, "CoinLanded").withArgs(requestId, anyValue)
@@ -186,11 +186,11 @@ describe("VRFConsumer", function () {
       await consumer.connect(otherAccount).deposit({ value: ethers.parseEther("0.01") })
       await consumer.connect(otherAccount).pick(2)
       await consumer.connect(otherAccount).flipCoin()
-      const requestId = await consumer.s_requests(otherAccount)
+      const requestId = await consumer.getRequest(otherAccount)
       await coordinator.fulfillRandomWords(requestId, consumer.target)
 
-      expect(await consumer.s_results(otherAccount)).not.to.equal(0);
-      expect(await consumer.s_results(owner)).to.equal(0);
+      expect(await consumer.getResult(otherAccount)).not.to.equal(0);
+      expect(await consumer.getResult(owner)).to.equal(0);
     })
 
     it("Should clear the request ID value, so player can flip again", async function () {
@@ -199,10 +199,10 @@ describe("VRFConsumer", function () {
       await consumer.connect(otherAccount).deposit({ value: ethers.parseEther("0.01") })
       await consumer.connect(otherAccount).pick(2)
       await consumer.connect(otherAccount).flipCoin()
-      const requestId = await consumer.s_requests(otherAccount)
+      const requestId = await consumer.getRequest(otherAccount)
       await coordinator.fulfillRandomWords(requestId, consumer.target)
 
-      expect(await consumer.s_requests(otherAccount)).to.equal(0);
+      expect(await consumer.getRequest(otherAccount)).to.equal(0);
       await expect(consumer.connect(otherAccount).flipCoin()).not.to.be.reverted
     })
   })
@@ -224,7 +224,7 @@ describe("VRFConsumer", function () {
       await consumer.connect(otherAccount).deposit({ value: ethers.parseEther("0.01") })
       await consumer.connect(otherAccount).pick(2)
       await consumer.connect(otherAccount).flipCoin()
-      const requestId = await consumer.s_requests(otherAccount)
+      const requestId = await consumer.getRequest(otherAccount)
       await coordinator.fulfillRandomWords(requestId, consumer.target)
 
       await expect(consumer.connect(otherAccount).withdrawToWinner())
