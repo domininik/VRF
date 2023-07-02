@@ -8,12 +8,12 @@ contract VRFConsumer is VRFConsumerBaseV2 {
   VRFCoordinatorV2Interface immutable COORDINATOR;
 
   // Subscription ID this contract uses for funding requests.
-  uint64 immutable s_subscriptionId;
+  uint64 immutable i_subscriptionId;
 
   // The gas lane to use, which specifies the maximum gas price to bump to.
   // For a list of available gas lanes on each network,
   // see https://docs.chain.link/docs/vrf-contracts/#configurations
-  bytes32 immutable s_keyHash;
+  bytes32 immutable i_keyHash;
 
   // Depends on the number of requested values that you want sent to the
   // fulfillRandomWords() function. Storing each word costs about 20,000 gas,
@@ -39,7 +39,7 @@ contract VRFConsumer is VRFConsumerBaseV2 {
   uint8 private constant TAILS = 2;
 
   // Owner of this contract.
-  address public immutable s_owner;
+  address public immutable i_owner;
 
   // Request to user mapping.
   mapping(uint256 => address) public s_users;
@@ -60,7 +60,7 @@ contract VRFConsumer is VRFConsumerBaseV2 {
   event CoinLanded(uint256 indexed requestId, uint256 indexed result);
 
   modifier onlyOwner() {
-    require(msg.sender == s_owner, "You are not allowed to call this function!");
+    require(msg.sender == i_owner, "You are not allowed to call this function!");
     _;
   }
 
@@ -77,9 +77,9 @@ contract VRFConsumer is VRFConsumerBaseV2 {
     bytes32 keyHash
   ) VRFConsumerBaseV2(vrfCoordinator) {
     COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
-    s_keyHash = keyHash;
-    s_owner = msg.sender;
-    s_subscriptionId = subscriptionId;
+    i_keyHash = keyHash;
+    i_owner = msg.sender;
+    i_subscriptionId = subscriptionId;
   }
 
   receive() external payable {
@@ -110,8 +110,8 @@ contract VRFConsumer is VRFConsumerBaseV2 {
 
     // Will revert if subscription is not set and funded.
     requestId = COORDINATOR.requestRandomWords(
-      s_keyHash,
-      s_subscriptionId,
+      i_keyHash,
+      i_subscriptionId,
       REQUEST_CONFIRMATIONS,
       CALLBACK_GAS_LIMIT,
       NUM_WORDS
@@ -150,7 +150,7 @@ contract VRFConsumer is VRFConsumerBaseV2 {
   }
 
   // function withdrawAll() public onlyOwner {
-  //   address payable ownerPayable = payable(s_owner);
+  //   address payable ownerPayable = payable(i_owner);
   //   ownerPayable.transfer(address(this).balance); 
   // }
 
