@@ -28,3 +28,8 @@ Run tests with
 ```shell
 npx hardhat test
 ```
+
+Check tests coverage with
+```shell
+npx hardhat coverage
+```
