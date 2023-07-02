@@ -90,6 +90,12 @@ contract VRFConsumer is VRFConsumerBaseV2 {
     deposit();
   }
 
+  function deposit() public payable {
+    require (msg.value <= MAX_DEPOSIT, "Deposit is too high");
+
+    s_deposits[msg.sender] = msg.value;
+  }
+
   function pick(uint8 result) public {
     require(result == TAILS || result == HEADS, "Must be tails or heads.");
 
@@ -122,12 +128,6 @@ contract VRFConsumer is VRFConsumerBaseV2 {
 
     emit CoinFlipped(requestId, user);
     return requestId;
-  }
-
-  function deposit() public payable {
-    require (msg.value <= MAX_DEPOSIT, "Deposit is too high");
-
-    s_deposits[msg.sender] = msg.value;
   }
 
   function withdrawToWinner() public {
