@@ -59,6 +59,11 @@ contract VRFConsumer is VRFConsumerBaseV2 {
   event CoinFlipped(uint256 indexed requestId, address indexed user);
   event CoinLanded(uint256 indexed requestId, uint256 indexed result);
 
+  modifier onlyOwner() {
+    require(msg.sender == s_owner, "You are not allowed to call this function!");
+    _;
+  }
+
   /**
    * @notice Constructor inherits VRFConsumerBaseV2
    *
@@ -77,9 +82,12 @@ contract VRFConsumer is VRFConsumerBaseV2 {
     s_subscriptionId = subscriptionId;
   }
 
-  modifier onlyOwner() {
-    require(msg.sender == s_owner, "You are not allowed to call this function!");
-    _;
+  receive() external payable {
+    deposit();
+  }
+
+  fallback() external payable {
+    deposit();
   }
 
   function pick(uint8 result) public {
@@ -116,24 +124,6 @@ contract VRFConsumer is VRFConsumerBaseV2 {
     return requestId;
   }
 
-  /**
-   * @notice Callback function used by VRF Coordinator
-   *
-   * @param requestId - id of the request
-   * @param randomWords - array of random results from VRF Coordinator
-   */
-  function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
-    // transform the result to a number between 1 and 2 inclusively
-    uint256 result = (randomWords[0] % 2) + 1;
-    // assign the transformed value to the address in the results mapping variable
-    address user = s_users[requestId];
-    s_results[user] = result;
-    // clear requests mapping
-    s_requests[user] = 0;
-    // emit event to signal that coin landed
-    emit CoinLanded(requestId, result);
-  }
-
   function deposit() public payable {
     require (msg.value <= MAX_DEPOSIT, "Deposit is too high");
 
@@ -168,11 +158,21 @@ contract VRFConsumer is VRFConsumerBaseV2 {
     return s_deposits[user];
   }
 
-  receive() external payable {
-    deposit();
-  }
-
-  fallback() external payable {
-    deposit();
+  /**
+   * @notice Callback function used by VRF Coordinator
+   *
+   * @param requestId - id of the request
+   * @param randomWords - array of random results from VRF Coordinator
+   */
+  function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
+    // transform the result to a number between 1 and 2 inclusively
+    uint256 result = (randomWords[0] % 2) + 1;
+    // assign the transformed value to the address in the results mapping variable
+    address user = s_users[requestId];
+    s_results[user] = result;
+    // clear requests mapping
+    s_requests[user] = 0;
+    // emit event to signal that coin landed
+    emit CoinLanded(requestId, result);
   }
 }
