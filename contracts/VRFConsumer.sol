@@ -21,16 +21,16 @@ contract VRFConsumer is VRFConsumerBaseV2 {
   // this limit based on the network that you select, the size of the request,
   // and the processing of the callback request in the fulfillRandomWords()
   // function.
-  uint32 constant CALLBACK_GAS_LIMIT = 100000;
+  uint32 private constant CALLBACK_GAS_LIMIT = 100000;
 
   // The default is 3, but you can set this higher.
-  uint16 constant REQUEST_CONFIRMATIONS = 3;
+  uint16 private constant REQUEST_CONFIRMATIONS = 3;
 
   // For this example, retrieve 1 random value in one request.
   // Cannot exceed VRFCoordinatorV2.MAX_NUM_WORDS.
-  uint32 constant NUM_WORDS = 1;
+  uint32 private constant NUM_WORDS = 1;
 
-  uint64 public constant MAX_DEPOSIT = 0.01 ether;
+  uint64 private constant MAX_DEPOSIT = 0.01 ether;
 
   // User wins 190% of the bet or loses it all.
   uint8 private constant PRIZE_MULTIPLIER = 190;
