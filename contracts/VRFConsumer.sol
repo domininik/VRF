@@ -154,6 +154,10 @@ contract VRFConsumer is VRFConsumerBaseV2 {
   //   ownerPayable.transfer(address(this).balance); 
   // }
 
+  function getOwner() public view returns (address) {
+    return i_owner;
+  }
+
   function getBalance(address user) public view onlyOwner returns (uint256) {
     return s_deposits[user];
   }

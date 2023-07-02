@@ -37,10 +37,10 @@ describe("VRFConsumer", function () {
   }
 
   describe("Deployment", function () {
-    it.skip("Should set the right owner", async function () {
+    it("Should set the right owner", async function () {
       const { consumer, owner } = await loadFixture(deployFixture)
 
-      expect(await consumer.i_owner()).to.equal(owner.address)
+      expect(await consumer.getOwner()).to.equal(owner.address)
     })
   })
 
